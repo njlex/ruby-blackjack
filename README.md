@@ -1,9 +1,8 @@
-A sample Blackjack game using Ruby Programming Language
--------------------------------------------------------
+## A sample Blackjack game using Ruby Programming Language
 
-Pseudo Code
------------
+### Pseudo Code
 
+`
 Show welcome message
 Start game
   Dealer shuffles cards
@@ -56,3 +55,4 @@ Start game
 
   if player wants to play again
     start another game
+`
