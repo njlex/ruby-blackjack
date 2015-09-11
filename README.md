@@ -2,7 +2,8 @@
 
 ### Pseudo Code
 
-```Show welcome message
+```
+Show welcome message
 Start game
 Dealer shuffles cards
 Dealer deals 1 card to player
@@ -54,3 +55,4 @@ show play again message
 
 if player wants to play again
   start another game
+```
