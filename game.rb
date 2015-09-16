@@ -4,12 +4,19 @@ require 'io/console'
 
 # Game settings
 WINDOW_WIDTH = 80
+ESC_KEY = 27
+H_KEY = 104
+S_KEY = 115
+ENTER_KEY = 13
+
+$last_key = 0
 
 SUITS = ['♥', '♣', '♦', '♠']
 CARDS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 
-deck = SUITS.product(CARDS);
-deck.shuffle!
+def shuffle_cards(deck)
+  deck.shuffle!
+end
 
 def deal_card_to(cards, deck)
   cards << deck.pop
@@ -40,37 +47,79 @@ def show_bottom_border
   print "\n"
 end
 
+def get_value(card)
+  # card[0] is the suit, card[1] is the value 2 - 10 and J, Q, K
+  if card[1] == 'A'
+    11
+  elsif card[1].to_i == 0
+    10
+  else
+    card[1].to_i
+  end
+end
+
+def is_blackjack?(cards)
+  # TODO: take into account the ace which is either 1 or 11
+  total = 0
+
+  cards.each do |card| 
+    total += get_value(card)
+  end
+
+  total == 21 ? true : false
+end
+
+def clear_screen
+    system "clear"
+end
+
 def show_welcome
-  system "clear"
+  $last_key = 0
 
-  show_top_border
+  while $last_key != ESC_KEY && $last_key != ENTER_KEY do
+    clear_screen
 
-  print_center "Welcome to Blackjack game!"
-  print_center "Press Enter to start or Esc to quit"
-  print_center ""
+    show_top_border
+
+    print_center "Welcome to Blackjack game!"
+    print_center "Press Enter to start or Esc to quit"
+    print_center ""
+
+    $last_key = STDIN.raw(&:getbyte)
+  end
 end
 
-user_input = 0
+def start_game
+  # Game started
+  clear_screen
 
-# Esc key is 27 bytecode
-while user_input != 27 do
-  show_welcome
+  deck = SUITS.product(CARDS)
 
-  user_input = STDIN.raw(&:getbyte)
+  shuffle_cards deck
+
+  # Initialize both dealer and player
+  player = [] 
+  dealer = [] 
+
+  # first deal
+  deal_card_to player, deck
+  deal_card_to dealer, deck
+
+  # second deal
+  deal_card_to player, deck
+  deal_card_to dealer, deck
+
+  print_center "Player has: " + show_cards(player).to_s
+  print_center "Dealer has: " + show_cards(dealer).to_s
+
+  if is_blackjack?(player)
+    puts "Congrats! You win!"
 end
 
-player = [] 
-dealer = [] 
+show_welcome
 
-# first turn
-deal_card_to player, deck
-deal_card_to dealer, deck
-
-# second turn
-deal_card_to player, deck
-deal_card_to dealer, deck
-
-print_center "Player has: " + show_cards(player).to_s
-print_center "Dealer has: " + show_cards(dealer).to_s
+if $last_key == ENTER_KEY
+  start_game
+end
 
 show_bottom_border
