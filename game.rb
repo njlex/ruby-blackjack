@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 
 # @TODO:
-# Check for tie blackjack
+# Check tie blackjack is working properly
 
 require 'io/console'
 require 'pry'
@@ -180,12 +180,12 @@ def start_game
       if $last_key == H_KEY
         deal_card_to player, deck
 
-        #clear_screen
-
-        #print_center "You have: " + show_cards(player).to_s
-        #puts_center "Total value: " + card_total(player).to_s
-
-        if is_blackjack?(player)
+        # Check for tie
+        if card_total(dealer) == card_total(player)
+          compare_cards player, dealer, "It's a tie! Dealer wins!"
+          players_turn = false
+          break
+        elsif is_blackjack?(player)
           compare_cards player, dealer, "Congrats! You win!"
           players_turn = false
           break
@@ -231,6 +231,8 @@ def start_game
     # Hands down and compare cards
     if card_total(dealer) > card_total(player)
       message = "You lose!"
+    elsif card_total(dealer) == card_total(player)
+      message = "It's a tie! Dealer wins!"
     else
       message = "Congrats! You win!"
     end
