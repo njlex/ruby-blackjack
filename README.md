@@ -43,13 +43,16 @@ do while dealer cards total less than 17
   else if dealer cards total is over 21
     player wins
     break loop
+  else if dealer cards total is over 17
+    hands down and compare total
+    break loop
 loop
 
-when dealer has reached 17 or more, 
-check if dealer cards total is greater than player cards total
-  then dealer wins
-else
-  player wins
+if hands down and compare
+  check if dealer cards total is greater than player cards total
+    then dealer wins
+  else
+    player wins
 
 show play again message
 

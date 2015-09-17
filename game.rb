@@ -1,5 +1,9 @@
 #!/usr/bin/ruby
 
+# @TODO:
+# Check for tie blackjack
+# Decide wether A is 11 or 1
+
 require 'io/console'
 
 # Game settings
@@ -27,7 +31,14 @@ def show_cards(cards)
 end
 
 def puts_center(message)
-  puts message.center(WINDOW_WIDTH)
+  print "|"
+  print message.center(WINDOW_WIDTH)
+  print "|"
+  print "\n"
+  print "|"
+  print "".center(WINDOW_WIDTH) 
+  print "|"
+  print "\n"
 end
 
 def print_center(message)
@@ -38,13 +49,26 @@ def print_center(message)
 end
 
 def show_top_border
-  (WINDOW_WIDTH + 2).times { print '-' }
+  system 'clear'
+  print "\n"
+  (WINDOW_WIDTH + 2).times { print '~' }
   print "\n"
 end
 
 def show_bottom_border
-  (WINDOW_WIDTH + 2).times { print '-' }
+  (WINDOW_WIDTH + 2).times { print '~' }
   print "\n"
+end
+
+def compare_cards(player, dealer, message = '')
+  clear_screen
+
+  puts_center message
+  print_center "You have: " + show_cards(player).to_s
+  puts_center "Total value: " + card_total(player).to_s
+
+  print_center "Dealer has: " + show_cards(dealer).to_s
+  puts_center "Total value: " + card_total(dealer).to_s
 end
 
 def get_value(card)
@@ -58,7 +82,7 @@ def get_value(card)
   end
 end
 
-def is_blackjack?(cards)
+def card_total(cards)
   # TODO: take into account the ace which is either 1 or 11
   total = 0
 
@@ -66,11 +90,27 @@ def is_blackjack?(cards)
     total += get_value(card)
   end
 
-  total == 21 ? true : false
+  total
+end
+
+def is_blackjack?(cards)
+  card_total(cards) == 21
+end
+
+def is_busted?(cards)
+  card_total(cards) > 21
 end
 
 def clear_screen
     system "clear"
+
+    show_top_border
+end
+
+def wait_for_input
+  show_bottom_border
+
+  $last_key = STDIN.raw(&:getbyte)
 end
 
 def show_welcome
@@ -79,13 +119,18 @@ def show_welcome
   while $last_key != ESC_KEY && $last_key != ENTER_KEY do
     clear_screen
 
-    show_top_border
+    puts_center "Welcome to Blackjack game!"
 
-    print_center "Welcome to Blackjack game!"
-    print_center "Press Enter to start or Esc to quit"
-    print_center ""
+    print_center "= Keyboard Controls ="
+    print_center "h for hit"
+    puts_center "s for stay"
 
-    $last_key = STDIN.raw(&:getbyte)
+    print_center "= Credits ="
+    puts_center "Copyright Noel Jarencio - Lexmark R&D"
+
+    puts_center "Press Enter to begin playing or Esc to quit"
+
+    wait_for_input
   end
 end
 
@@ -109,17 +154,107 @@ def start_game
   deal_card_to player, deck
   deal_card_to dealer, deck
 
-  print_center "Player has: " + show_cards(player).to_s
-  print_center "Dealer has: " + show_cards(dealer).to_s
-
+  # Player's turn first
   if is_blackjack?(player)
-    puts "Congrats! You win!"
+    compare_cards player, dealer, "Congrats! You win!"
+  else
+    players_turn = true
+    dealers_turn = false
+
+    while players_turn
+      clear_screen
+
+      puts_center "Please press h for hit or s to stay"
+
+      print_center "You have: " + show_cards(player).to_s
+      puts_center "Total value: " + card_total(player).to_s
+
+      players_turn = wait_for_input == H_KEY
+
+      # Player chooses hit
+      if $last_key == H_KEY
+        deal_card_to player, deck
+
+        clear_screen
+
+        print_center "You have: " + show_cards(player).to_s
+        puts_center "Total value: " + card_total(player).to_s
+
+        if is_blackjack?(player)
+          compare_cards player, dealer, "Congrats! You win!"
+          players_turn = false
+          break
+        elsif is_busted?(player)
+          compare_cards player, dealer, "You lose!"
+          players_turn = false
+          break
+        end
+      elsif $last_key == S_KEY
+        players_turn = false
+        dealers_turn = true
+        break
+      else
+        players_turn = true
+        dealers_turn = false
+      end
+    end
+  end
+
+  must_decide_winner = false
+
+  # Dealer's turn
+  if dealers_turn && card_total(dealer) < 17
+    #clear_screen
+
+    while card_total(dealer) < 17
+      deal_card_to dealer, deck
+
+      if is_blackjack?(dealer)
+        compare_cards player, dealer, "You lose!"
+        break
+      elsif is_busted?(dealer)
+        compare_cards player, dealer, "Dealer is busted! You win!"
+        break
+      elsif card_total(dealer) >= 17
+        must_decide_winner = true
+      end
+    end
+  else
+    must_decide_winner = true
+  end
+
+  # Player and dealer's turn is finish, we must decide the winner by who's highest
+  if must_decide_winner 
+    # Hands down and compare cards
+    if card_total(dealer) > card_total(player)
+      message = "You lose!"
+    else
+      message = "Congrats! You win!"
+    end
+
+    compare_cards player, dealer, message
+  end
 end
 
 show_welcome
 
-if $last_key == ENTER_KEY
-  start_game
+while $last_key != ESC_KEY
+  if $last_key == ENTER_KEY
+    start_game
+  end
+
+  puts_center "Would you like to play again? Enter to continue or Esc to quit."
+
+  wait_for_input
+
+  clear_screen
+end
+
+if $last_key == ESC_KEY
+  clear_screen
+  print_center ""
+  print_center "Thank you for playing!"
+  print_center ""
 end
 
 show_bottom_border
