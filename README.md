@@ -59,3 +59,10 @@ show play again message
 if player wants to play again
   start another game
 ```
+
+### How to run
+
+```
+cd blackjack
+./game.rb
+```

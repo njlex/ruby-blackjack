@@ -2,9 +2,9 @@
 
 # @TODO:
 # Check for tie blackjack
-# Decide wether A is 11 or 1
 
 require 'io/console'
+require 'pry'
 
 # Game settings
 WINDOW_WIDTH = 80
@@ -83,11 +83,16 @@ def get_value(card)
 end
 
 def card_total(cards)
-  # TODO: take into account the ace which is either 1 or 11
   total = 0
 
   cards.each do |card| 
-    total += get_value(card)
+    value = get_value(card)
+
+    if value == 11 && ((total + value) > 21)
+      total += 1
+    else
+      total += value
+    end
   end
 
   total
@@ -175,10 +180,10 @@ def start_game
       if $last_key == H_KEY
         deal_card_to player, deck
 
-        clear_screen
+        #clear_screen
 
-        print_center "You have: " + show_cards(player).to_s
-        puts_center "Total value: " + card_total(player).to_s
+        #print_center "You have: " + show_cards(player).to_s
+        #puts_center "Total value: " + card_total(player).to_s
 
         if is_blackjack?(player)
           compare_cards player, dealer, "Congrats! You win!"
@@ -204,8 +209,6 @@ def start_game
 
   # Dealer's turn
   if dealers_turn && card_total(dealer) < 17
-    #clear_screen
-
     while card_total(dealer) < 17
       deal_card_to dealer, deck
 
@@ -219,7 +222,7 @@ def start_game
         must_decide_winner = true
       end
     end
-  else
+  elsif dealers_turn
     must_decide_winner = true
   end
 
