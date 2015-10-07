@@ -13,6 +13,7 @@ H_KEY = 104
 S_KEY = 115
 ENTER_KEY = 13
 
+# last input key by player
 $last_key = 0
 
 SUITS = ['♥', '♣', '♦', '♠']
